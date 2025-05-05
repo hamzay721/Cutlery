@@ -1,0 +1,171 @@
+Detailed System Overview for the Costing Module of the Cutlery Management System
+The Costing Module of the Cutlery Management System is designed to manage and track the costs associated with the production and delivery of cutlery products, from raw material acquisition to final delivery. The system automates inventory monitoring, purchase order generation, goods receipt, production processes, and cost accounting, ensuring accurate cost calculations and efficient operations. It uses .NET Core for the backend API, Angular for the frontend user interface, and SQL Server for data storage. Below is a detailed breakdown of the system's components, processes, and functionalities, aligned with the provided requirements.
+
+1. Warehouse Trigger for Purchase
+Purpose: Ensures inventory levels are maintained by automatically triggering purchase orders when stock falls below a predefined threshold.
+Process:
+The system continuously monitors the quantity of materials in the warehouse.
+A minimum stock level is defined for each material (e.g., steel for cutlery).
+If the quantity drops below this threshold, a purchase order (P/O) is generated.
+Cost Calculation:
+Formula: Total Cost = Quantity Needed × Unit Cost.
+The quantity needed is calculated as the difference between the minimum stock level and the current stock.
+Unit cost is retrieved from the material’s historical data or supplier agreements.
+Implementation:
+Backend: A .NET Core API endpoint checks material quantities and creates a P/O if needed.
+Database: Material quantities and thresholds are stored in a Materials table.
+Frontend: Admin can configure minimum stock levels via an Angular interface.
+2. Purchase Order (P/O) Generation and Delivery
+Purpose: Formalizes the request for materials and tracks their delivery to the warehouse.
+Process:
+A P/O is created with details including material ID, quantity, unit cost, total cost, and status (initially “Pending”).
+The P/O is sent to the supplier, and upon delivery, it is updated to “Delivered.”
+Implementation:
+Backend: .NET Core API handles P/O creation and status updates.
+Database: PurchaseOrders table stores P/O details.
+Frontend: Angular dashboard displays active P/Os with their statuses.
+3. Gate Pass and Goods Receipt
+Purpose: Manages the receipt and verification of delivered materials at the warehouse gate.
+Process:
+Gate Pass: A unique identifier is issued for each delivery to track it through the gate office.
+Gate Office Screen:
+Staff enter the P/O ID, quantity received, and gate pass details via an Angular form.
+The system validates the received quantity against the P/O.
+Accept/Refuse:
+Staff can accept or refuse the delivery based on quality or quantity checks.
+If accepted, the material quantity is updated in the inventory.
+If refused, the P/O status is updated to reflect the issue.
+Goods Receiving Note (GRN):
+A GRN is generated to document the receipt, including P/O ID, quantity received, acceptance status, and date.
+Implementation:
+Backend: .NET Core API processes gate entries, updates inventory, and generates GRNs.
+Database: GoodsReceivingNotes table stores GRN details.
+Frontend: Angular provides a gate entry screen for input and validation.
+4. Inventory Management (FIFO Rule)
+Purpose: Tracks material stock using the First-In-First-Out (FIFO) method to ensure accurate cost tracking.
+Process:
+Materials are stored with their receipt date and unit cost.
+When materials are used in production, the earliest received (oldest) stock is consumed first.
+The system calculates the cost of materials used based on the unit cost of the consumed stock.
+Implementation:
+Backend: .NET Core API retrieves materials in order of receipt date for production.
+Database: Materials table includes ReceivedDate for FIFO sorting.
+Frontend: Angular displays current inventory levels and FIFO-based usage history.
+5. Production Warehouses
+The system manages two production warehouses, each with specific processes that contribute to the cutlery production.
+
+Warehouse 1: Material Processing
+Purpose: Handles raw material processing through four distinct processes.
+Processes:
+Process A: Initial material preparation (e.g., cutting raw steel).
+Process B: Shaping or forming.
+Process C: Heat treatment or hardening.
+Process D: Final material refinement.
+Cost Tracking:
+Each process incurs costs for labour, maintenance tools, and energy (electricity/fuel).
+Example costs for Process A:
+February 2025: 600,000 (Labour: 300,000, Maintenance: 150,000, Energy: 150,000).
+March 2025: 500,000 (Labour: 250,000, Maintenance: 125,000, Energy: 125,000).
+June 2025: 1,100,000 (Labour: 550,000, Maintenance: 275,000, Energy: 275,000).
+Implementation:
+Backend: .NET Core API tracks process completion and associated costs.
+Database: Processes and ProcessCosts tables store process details and costs.
+Frontend: Angular dashboard displays process costs by month and year.
+Warehouse 2: Finishing Processes
+Purpose: Completes the cutlery production with finishing and packing.
+Processes:
+Grind: Smooths and sharpens cutlery edges.
+Polish: Enhances surface finish for aesthetics.
+Washing: Cleans products to remove residues.
+Packing: Final packaging for shipment.
+Cost Tracking:
+Similar to Warehouse 1, costs include labour, maintenance, and energy.
+Costs are aggregated for final product cost calculation.
+Implementation:
+Same as Warehouse 1, with processes specific to Warehouse 2 in the database.
+6. Additional Costs
+Purpose: Accounts for costs incurred after production, such as transport and customs.
+Process:
+Transport Fee to Port: Cost of shipping finished cutlery to the port.
+Customs Fee: Fees for export/import clearance.
+These costs are associated with a specific P/O and added to the final product cost.
+Implementation:
+Backend: .NET Core API records transport and customs fees.
+Database: AdditionalCosts table stores these costs.
+Frontend: Angular displays additional costs in the cost breakdown.
+7. Final P/O Status
+Purpose: Marks the completion of the production and delivery process.
+Process:
+Once all processes (material processing, finishing, packing) and additional costs are recorded, the P/O status is updated to “Success.”
+This indicates that the cutlery is ready for sale or distribution.
+Implementation:
+Backend: .NET Core API updates P/O status.
+Database: PurchaseOrders table reflects the updated status.
+Frontend: Angular dashboard shows completed P/Os.
+8. Departmental Accounting
+Purpose: Tracks and reports costs for each process to support financial analysis.
+Process:
+Costs are recorded for each process in both warehouses, broken down into:
+Labour: Wages for workers.
+Maintenance Tools: Equipment upkeep.
+Energy: Electricity and fuel costs.
+Example: Process A costs are stored for February, March, and June 2025.
+Costs are aggregated to calculate the total cost per process and per product.
+Implementation:
+Backend: .NET Core API retrieves and aggregates cost data.
+Database: ProcessCosts table stores detailed cost breakdowns.
+Frontend: Angular dashboard displays costs in tables or charts.
+9. Actual Cost of the Cutlery Product
+Purpose: Calculates the total cost of producing a cutlery product, including all processes and additional fees.
+Process:
+Material Cost: Derived from FIFO-based inventory usage (Quantity × Unit Cost).
+Process Costs: Sum of costs for all processes in Warehouse 1 (A, B, C, D) and Warehouse 2 (Grind, Polish, Washing, Packing).
+Additional Costs: Transport and customs fees.
+Formula:
+text
+
+Copy
+Total Product Cost = Material Cost + Σ(Process Costs) + Transport Fee + Customs Fee
+The cost is calculated per P/O and can be divided by the quantity to get the per-unit cost.
+Implementation:
+Backend: .NET Core API computes the total cost by querying material, process, and additional cost tables.
+Database: All relevant tables (Materials, ProcessCosts, AdditionalCosts) provide data for calculation.
+Frontend: Angular displays the final product cost on the dashboard.
+10. Admin Dashboard
+Purpose: Provides a centralized interface for admins to monitor costs, P/Os, and inventory.
+Features:
+Cost Overview: Displays process costs (e.g., Process A: Feb 600,000, Mar 500,000, June 1,100,000) in tables or charts.
+P/O Status: Shows pending, delivered, and successful P/Os.
+Inventory Levels: Displays current stock with FIFO details.
+Final Product Cost: Shows the calculated cost per product or batch.
+Gate Entry: Allows staff to input gate pass and receipt details.
+Implementation:
+Backend: .NET Core API serves data for the dashboard.
+Database: All tables provide data for display.
+Frontend: Angular uses components and services to fetch and display data, with interactive forms for gate entry and configuration.
+Technology Stack Details
+.NET Core:
+Used for building a RESTful API to handle business logic, including P/O generation, inventory updates, and cost calculations.
+Entity Framework Core is used for database operations, mapping SQL Server tables to C# models.
+Angular:
+Provides a responsive frontend with components for the dashboard, gate entry, and P/O management.
+Uses Angular services to communicate with the .NET Core API.
+Features interactive forms, tables, and charts (e.g., using Angular Material or Chart.js).
+SQL Server:
+Stores all data in relational tables (e.g., Materials, PurchaseOrders, ProcessCosts).
+Supports complex queries for cost calculations and FIFO inventory management.
+Ensures data integrity with foreign keys and constraints.
+Workflow Summary
+Inventory Check: Warehouse monitors material levels; if low, triggers a P/O.
+P/O Creation: P/O is generated with quantity, unit cost, and total cost.
+Delivery: Materials arrive at the warehouse, and a gate pass is issued.
+Gate Entry: Staff enter receipt details, accept/refuse delivery, and generate a GRN.
+Inventory Update: Accepted materials are added to inventory using FIFO.
+Production:
+Warehouse 1 processes materials through A, B, C, D.
+Warehouse 2 finishes with Grind, Polish, Washing, and Packing.
+Additional Costs: Transport and customs fees are recorded.
+Cost Calculation: Material, process, and additional costs are summed to get the final product cost.
+P/O Completion: P/O status is updated to “Success.”
+Dashboard: Admins view costs, P/O statuses, and inventory via the Angular dashboard.
+This system ensures accurate cost tracking, efficient inventory management, and comprehensive reporting, meeting all specified requirements while leveraging the .NET, Angular, and SQL Server stack for robust performance and scalability.
